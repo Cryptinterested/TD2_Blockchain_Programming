@@ -3,8 +3,8 @@ import binascii
 import hashlib
 import unicodedata
 from tinyec.ec import SubGroup, Curve  #pip install tinyec
-
-
+import hmac
+import pickle
 
 
 def random_seed() :
@@ -124,8 +124,20 @@ def public_key_from_priv_key(private_key):
     pubKey = curve.g * privKey
     pubKeyCompressed = '0' + str(2 + pubKey.y % 2) + str(hex(pubKey.x)[2:])
     return pubKeyCompressed
-    
-    
+
+def generate_child_keys(private_key, public_key, chain_key, i):
+    ser_i = i.to_bytes(32, 'big').hex()
+    ser_pk = str(int(private_key, 16).to_bytes(256, 'big'))
+    if i >= 2^31:
+        I = hmac.new(chain_key.encode(), ("0x00" + ser_pk + ser_i).encode(), digestmod='sha512')
+    else:
+        header = "0x02" if int(public_key, 16) % 2 == 0 else "0x03";
+        I = hmac.new(chain_key.encode(), (header + ser_pk + ser_i).encode(), digestmod='sha512')
+    tmp = I.hexdigest()
+    IL = int(tmp[:len(tmp)//2], 16).to_bytes(32, 'big')
+    IR = int(tmp[len(tmp)//2:], 16).to_bytes(32, 'big')
+
+    return bin(int(IL, 16)) + (int(private_key, 16) % TODO), IR
 
 if __name__ == '__main__':
     
@@ -152,9 +164,9 @@ if __name__ == '__main__':
     print("\nMaster private key :", master_private_key)
     print("Master chain code :", master_chain_code)
     print('Master public key :', master_public_key)
-    
-    
-    
+
+    # Generate child address
+    generate_child_keys(master_private_key, master_public_key, master_chain_code, 0)
     
     
     
