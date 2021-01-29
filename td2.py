@@ -23,5 +23,12 @@ print("Checksum :",checksum)
 entropy = str(binary_random_integer) +''+ str(checksum)
 print("Entropy :",entropy, len(entropy))
 
-segmentation = [[elt[i+j] for i,elt in enumerate(entropy)] for j in range(11)]
-print(segmentation)
+map_bits = []
+for i in range(12):
+    aux = []
+    for j in range(11) :
+        aux.append(entropy[i+j])
+    map_bits.append(aux)
+    aux = []
+
+print(map_bits)
