@@ -28,8 +28,7 @@ def random_seed():
     data = entropy.strip()  # cleaning of data
     data = binascii.unhexlify(data)
     h = hashlib.sha256(data).hexdigest()
-    b = bin(int(binascii.hexlify(data), 16))[2:].zfill(len(data) * 8) + bin(int(h, 16))[2:].zfill(256)[
-                                                                        : len(data) * 8 // 32]
+    b = bin(int(binascii.hexlify(data), 16))[2:].zfill(len(data) * 8) + bin(int(h, 16))[2:].zfill(256)[: len(data) * 8 // 32]
     return b
 
 
@@ -135,7 +134,7 @@ def public_key_from_priv_key(private_key):
 def generate_child_keys(private_key, public_key, chain_key, i):
     ser_i = i.to_bytes(32, 'big').hex()
     ser_pk = str(int(private_key, 16).to_bytes(256, 'big'))
-    if i >= 2 ^ 31:
+    if i >= 2**31:
         I = hmac.new(chain_key.encode(), ("0x00" + ser_pk + ser_i).encode(), digestmod='sha512')
     else:
         header = "0x02" if int(public_key, 16) % 2 == 0 else "0x03";
@@ -144,7 +143,9 @@ def generate_child_keys(private_key, public_key, chain_key, i):
     IL = int(tmp[:len(tmp) // 2], 16).to_bytes(32, 'big')
     IR = int(tmp[len(tmp) // 2:], 16).to_bytes(32, 'big')
 
-    return bin(int(IL, 16)) + (int(private_key, 16) % TODO), IR
+    #return (bin(int(IL.hex(), 16)) + str(int(private_key, 16) % 2**256)), IR.hex()
+    #return str(IL.hex()) + str(int(private_key, 16) % 2**256), IR.hex()
+    return hex((int(IL.hex(),16)+int(private_key, 16) % 2**256))[2:], IR.hex()
 
 
 def choice(options, prompt):
@@ -164,15 +165,14 @@ if __name__ == '__main__':
     # seed test : begin pen recall brand envelope stomach change unable unknown advance unknown enforce
     if choice == "1":  # Import mnemonic
         seed = import_mnemonic_seed(english_dico)
-        print('Seed :', seed, '\n')
+        #print('Seed :', seed, '\n')
         mnemonic = from_mnemonic_to_root_seed(seed, english_dico)
     else:  # Générer mnemonic
         entropy = random_seed()
         bits_tap = bits_tab(entropy)
         mnemonic = construct_seed_from(english_dico, bits_tap)
 
-    print("Seed phrase (12 words) :", mnemonic)
-
+    print("\nSeed phrase (12 words) :", mnemonic)
     # Master key private and chian code
     hmac512_hex = hmac512(mnemonic)
     # print(hmac512_hex)
@@ -181,6 +181,23 @@ if __name__ == '__main__':
     print("\nMaster private key :", master_private_key)
     print("Master chain code :", master_chain_code)
     print('Master public key :', master_public_key)
-
-    # Generate child address
-    generate_child_keys(master_private_key, master_public_key, master_chain_code, 0)
+    
+    choice2 = -1
+    while choice2 not in ["1","2"] :
+        choice2 = input("Entrez 1 pour générer une clé enfant, 2 pour générer une clé enfant à un index donné :")
+    if choice2 == "1":
+        child_private_key, child_chain_code = generate_child_keys(master_private_key, master_public_key, master_chain_code, 0)    
+    else:
+        index = -1
+        while index < 0 :
+            try :             
+                index = int(input("Choisissez un index : "))
+                child_private_key, child_chain_code = generate_child_keys(master_private_key, master_public_key, master_chain_code, index)
+                print("Génération de l'enfant à l'index",index)
+                    
+            except :
+                print("Saisissez un entier positif !")
+    
+    print("\nChild  private key :",child_private_key)
+    print("Child  chain code :", child_chain_code)
+        
