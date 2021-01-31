@@ -145,7 +145,7 @@ def generate_child_keys(private_key, public_key, chain_key, i):
 
     #return (bin(int(IL.hex(), 16)) + str(int(private_key, 16) % 2**256)), IR.hex()
     #return str(IL.hex()) + str(int(private_key, 16) % 2**256), IR.hex()
-    return hex((int(IL.hex(),16)+int(private_key, 16) % 2**256))[2:], IR.hex()
+    return hex((int(IL.hex(),16)+int(private_key, 16) % 2**256))[2:] ,IR.hex()
 
 
 def choice(options, prompt):
@@ -182,18 +182,39 @@ if __name__ == '__main__':
     print("Master chain code :", master_chain_code)
     print('Master public key :', master_public_key)
     
+    
+    
+    child_private_key = ""
+    child_chain_code = ""
     choice2 = -1
-    while choice2 not in ["1","2"] :
-        choice2 = input("Entrez 1 pour générer une clé enfant, 2 pour générer une clé enfant à un index donné :")
+    while choice2 not in ["1","2", "3"] :
+        choice2 = input("Entrez 1 pour générer une clé enfant, 2 pour générer une clé enfant à un index donné, 3 pour générer l'enfant d'index M de la couche N :")
     if choice2 == "1":
         child_private_key, child_chain_code = generate_child_keys(master_private_key, master_public_key, master_chain_code, 0)    
-    else:
+    elif choice2 == "2":
         index = -1
         while index < 0 :
             try :             
                 index = int(input("Choisissez un index : "))
                 child_private_key, child_chain_code = generate_child_keys(master_private_key, master_public_key, master_chain_code, index)
                 print("Génération de l'enfant à l'index",index)
+                break
+            except :
+                print("Saisissez un entier positif !")
+    else :
+        index = -1
+        level = -1
+        child_private_key = master_private_key
+        child_chain_code = master_chain_code
+        child_public_key = master_public_key
+        while index < 0 or level < 0 :
+            try :             
+                index = int(input("Choisissez un index pour la clé enfant : "))
+                level = int(input("Choisissez un niveau :"))
+                for i in range(level):
+                    child_private_key, child_chain_code = generate_child_keys(child_private_key, child_public_key, child_chain_code, index)
+                    child_public_key = public_key_from_priv_key(child_private_key)
+                print("Génération de l'enfant à la hauteur {} et à l'index {}".format(level,index))
                     
             except :
                 print("Saisissez un entier positif !")
