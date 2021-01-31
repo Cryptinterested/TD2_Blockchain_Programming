@@ -4,6 +4,7 @@ import hashlib
 import unicodedata
 from tinyec.ec import SubGroup, Curve  # pip install tinyec
 import hmac
+import ast
 
 
 def random_seed():
@@ -208,21 +209,30 @@ if __name__ == '__main__':
         succed = False
         while not succed:
             try:
-                # Level 1
-                level1 = int(input("Choisissez l'index de la couche 1 : "))
-                child_private_key1, child_chain_code1 = generate_child_keys(master_private_key, master_public_key,
-                                                                            master_chain_code, level1)
-                child_public_key1 = public_key_from_priv_key(child_private_key1)
 
-                # Level 2
-                level2 = int(input("Choisissez l'index de la couche 2 : "))
-                child_private_key2, child_chain_code2 = generate_child_keys(child_private_key1, child_public_key1,
-                                                                            child_chain_code1, level2)
-                child_public_key2 = public_key_from_priv_key(child_private_key2)
+                indexes = input("Entrez une liste d'indexes pour générer le child voulu. Exemple: [2,7,3,0] :")
+                indexes = ast.literal_eval(indexes)
+                if not isinstance(indexes, list):
+                    raise Exception("Les indexes doivent être une liste. Exemple: [0,3,2,6] !")
+                if len(indexes) == 0:
+                    raise Exception("Vous devez renseigner au moins 1 index !")
+                for elem in indexes:
+                    if not isinstance(elem, int) or elem < 0:
+                        raise Exception("Les indexes doivent être des entiers positifs !")
 
-                print("\nChild private key :", child_private_key2)
-                print("Child public key :", child_public_key2)
-                print("Child chain code :", child_chain_code2)
+                # Init first keys
+                child_private_key = master_private_key
+                child_chain_code = master_chain_code
+                child_public_key = master_public_key
+
+                for index in indexes:
+                    child_private_key, child_chain_code = generate_child_keys(child_private_key, child_public_key,
+                                                                              child_chain_code, index)
+                    child_public_key = public_key_from_priv_key(child_private_key)
+
+                print("\nChild private key :", child_private_key)
+                print("Child public key :", child_public_key)
+                print("Child chain code :", child_chain_code)
                 succed = True
-            except:
-                print("Saisissez un entier positif !")
+            except Exception as e:
+                print(e)
