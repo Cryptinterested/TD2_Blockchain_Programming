@@ -185,7 +185,9 @@ if __name__ == '__main__':
     if choice2 == "1":
         child_private_key, child_chain_code = generate_child_keys(master_private_key, master_public_key,
                                                                   master_chain_code, 0)
+        child_public_key = public_key_from_priv_key(child_private_key)
         print("\nChild private key :", child_private_key)
+        print("Child public key :", child_public_key)
         print("Child chain code :", child_chain_code)
     elif choice2 == "2":
         index = -1
@@ -194,8 +196,10 @@ if __name__ == '__main__':
                 index = int(input("Choisissez un index : "))
                 child_private_key, child_chain_code = generate_child_keys(master_private_key, master_public_key,
                                                                           master_chain_code, index)
+                child_public_key = public_key_from_priv_key(child_private_key)
                 print("Génération de l'enfant à l'index", index)
                 print("\nChild private key :", child_private_key)
+                print("Child public key :", child_public_key)
                 print("Child chain code :", child_chain_code)
                 break
             except:
@@ -217,6 +221,7 @@ if __name__ == '__main__':
                 child_public_key2 = public_key_from_priv_key(child_private_key2)
 
                 print("\nChild private key :", child_private_key2)
+                print("Child public key :", child_public_key2)
                 print("Child chain code :", child_chain_code2)
                 succed = True
             except:
